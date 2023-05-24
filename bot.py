@@ -22,11 +22,7 @@ def rm_cache(channel=None):
         for file in os.listdir("cache"):
             try:
                 if file.endswith(".json"):
-                    if channel:
-                        if file.startswith(channel):
-                            os.remove(f"cache/{file}")
-                            print(f"Removed {file}")
-                    else:
+                    if channel and file.startswith(channel) or not channel:
                         os.remove(f"cache/{file}")
                         print(f"Removed {file}")
             except Exception as e:
@@ -50,30 +46,28 @@ def save_cache(channel, cache, page):
 
 async def get_posts(user: Client, channel, page=1):
     page = int(page)
-    cache = get_cache(channel, page)
-    if cache:
+    if cache := get_cache(channel, page):
         return cache
-    else:
-        posts = []
-        async for post in user.get_chat_history(
-            chat_id=channel, limit=50, offset=(page - 1) * 50
-        ):
-            post: Message
-            if post.video:
-                if post.video.file_name:
-                    file_name = post.video.file_name
-                elif post.caption:
-                    file_name = post.caption
-                else:
-                    file_name = post.video.file_id
+    posts = []
+    async for post in user.get_chat_history(
+        chat_id=channel, limit=50, offset=(page - 1) * 50
+    ):
+        post: Message
+        if post.video:
+            if post.video.file_name:
+                file_name = post.video.file_name
+            elif post.caption:
+                file_name = post.caption
+            else:
+                file_name = post.video.file_id
 
-                file_name = file_name[:200]
+            file_name = file_name[:200]
 
-                title = " ".join(file_name.split(".")[:-1])
-                posts.append({"msg-id": post.id, "title": title})
+            title = " ".join(file_name.split(".")[:-1])
+            posts.append({"msg-id": post.id, "title": title})
 
-        save_cache(channel, {"posts": posts}, page)
-        return posts
+    save_cache(channel, {"posts": posts}, page)
+    return posts
 
 
 image_cache = {}
@@ -82,8 +76,7 @@ image_cache = {}
 async def get_image(bot: Client, file, channel):
     global image_cache
 
-    cache = image_cache.get(f"{channel}-{file}")
-    if cache:
+    if cache := image_cache.get(f"{channel}-{file}"):
         print(f"Returning img from cache - {channel}-{file}")
         return cache
 

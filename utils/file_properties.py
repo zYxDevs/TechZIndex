@@ -8,14 +8,12 @@ from datetime import datetime
 
 
 async def parse_file_id(message: "Message") -> Optional[FileId]:
-    media = get_media_from_message(message)
-    if media:
+    if media := get_media_from_message(message):
         return FileId.decode(media.file_id)
 
 
 async def parse_file_unique_id(message: "Messages") -> Optional[str]:
-    media = get_media_from_message(message)
-    if media:
+    if media := get_media_from_message(message):
         return media.file_unique_id
 
 
@@ -45,8 +43,7 @@ def get_media_from_message(message: "Message") -> Any:
         "video_note",
     )
     for attr in media_types:
-        media = getattr(message, attr, None)
-        if media:
+        if media := getattr(message, attr, None):
             return media
 
 
@@ -87,7 +84,7 @@ def get_name(media_msg: Union[Message, FileId]) -> str:
         }
 
         ext = formats.get(media_type)
-        ext = "." + ext if ext else ""
+        ext = f".{ext}" if ext else ""
 
         date = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         file_name = f"{media_type}-{date}{ext}"

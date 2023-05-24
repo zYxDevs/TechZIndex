@@ -17,9 +17,9 @@ async def media_streamer(bot, channel, message_id: int, request):
 
     if faster_client in class_cache:
         tg_connect = class_cache[faster_client]
-        logger.debug(f"Using cached ByteStreamer object for client")
+        logger.debug("Using cached ByteStreamer object for client")
     else:
-        logger.debug(f"Creating new ByteStreamer object for client")
+        logger.debug("Creating new ByteStreamer object for client")
         tg_connect = utils.ByteStreamer(faster_client)
         class_cache[faster_client] = tg_connect
 
