@@ -134,35 +134,34 @@ class ByteStreamer:
                     user_id=file_id.chat_id, access_hash=file_id.chat_access_hash
                 )
             else:
-                if file_id.chat_access_hash == 0:
-                    peer = raw.types.InputPeerChat(chat_id=-file_id.chat_id)
-                else:
-                    peer = raw.types.InputPeerChannel(
+                peer = (
+                    raw.types.InputPeerChat(chat_id=-file_id.chat_id)
+                    if file_id.chat_access_hash == 0
+                    else raw.types.InputPeerChannel(
                         channel_id=utils.get_channel_id(file_id.chat_id),
                         access_hash=file_id.chat_access_hash,
                     )
-
-            location = raw.types.InputPeerPhotoFileLocation(
+                )
+            return raw.types.InputPeerPhotoFileLocation(
                 peer=peer,
                 volume_id=file_id.volume_id,
                 local_id=file_id.local_id,
                 big=file_id.thumbnail_source == ThumbnailSource.CHAT_PHOTO_BIG,
             )
         elif file_type == FileType.PHOTO:
-            location = raw.types.InputPhotoFileLocation(
+            return raw.types.InputPhotoFileLocation(
                 id=file_id.media_id,
                 access_hash=file_id.access_hash,
                 file_reference=file_id.file_reference,
                 thumb_size=file_id.thumbnail_size,
             )
         else:
-            location = raw.types.InputDocumentFileLocation(
+            return raw.types.InputDocumentFileLocation(
                 id=file_id.media_id,
                 access_hash=file_id.access_hash,
                 file_reference=file_id.file_reference,
                 thumb_size=file_id.thumbnail_size,
             )
-        return location
 
     async def yield_file(
         self,
@@ -179,7 +178,7 @@ class ByteStreamer:
         Thanks to Eyaadh <https://github.com/eyaadh>
         """
         client = self.client
-        logger.debug(f"Starting to yielding file with client.")
+        logger.debug("Starting to yielding file with client.")
         media_session = await self.generate_media_session(client, file_id)
 
         current_part = 1
